@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless Application.
+Parameters:
+  TargetStage:
+    Default: dev
+    ConstraintDescription: 'Only stages dev, uat, prod are allowed.Default is dev'
+    Type: String
+    AllowedValues:
+      - dev
+      - uat
+      - prod
+
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "HTML2PDF-${TargetStage}"
+      Handler: "HtmlToPDF::HtmlToPDF.Function::FunctionHandler"
+      Runtime: dotnetcore3.1
+      CodeUri: 
+      Description: HTML to PDF
+      MemorySize: 1024
+      AutoPublishAlias: !Ref TargetStage
+      Timeout: 30
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
+        - AWSLambdaExecute
+        - AmazonS3FullAccess
+      Tags:
+        Project: PDF2HTML
+      Tracing: Active
+      Environment:
+        Variables:
+          LAMBDA_NET_SERIALIZER_DEBUG: true  
+      Events:
+        CreateThumbnailEvent:
+          Type: S3
+          Properties:
+            Bucket: !Ref SrcBucket
+            Events: s3:ObjectCreated:*
+  SrcBucket:
+    Type: AWS::S3::Bucket

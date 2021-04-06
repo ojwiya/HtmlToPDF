@@ -15,5 +15,9 @@
     <PackageReference Include="AWSSDK.S3" Version="3.5.5.2" />
     <PackageReference Include="HeadlessChromium.Puppeteer.Lambda.Dotnet" Version="1.0.1.47" />
     <PackageReference Include="PuppeteerSharp" Version="2.0.4" />
+    <None Update="serverless.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
+
 </Project>
