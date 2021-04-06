@@ -28,15 +28,18 @@ Resources:
         - AWSLambda_ReadOnlyAccess
         - AWSXrayWriteOnlyAccess
         - AWSLambdaExecute
-        - AmazonSQSFullAccess
+        - AmazonS3FullAccess
       Tags:
         Project: PDF2HTML
       Tracing: Active
+      Environment:
+        Variables:
+          LAMBDA_NET_SERIALIZER_DEBUG: true  
       Events:
-        MySQSEvent:
-          Type: SQS
+        CreateThumbnailEvent:
+          Type: S3
           Properties:
-            Queue: !GetAtt PDFSqsQueue.Arn
-            BatchSize: 10
-  PDFSqsQueue:
-    Type: AWS::SQS::Queue
+            Bucket: !Ref SrcBucket
+            Events: s3:ObjectCreated:*
+  SrcBucket:
+    Type: AWS::S3::Bucket

@@ -49,13 +49,16 @@ namespace HtmlToPDF
         public async Task<string> FunctionHandler(S3Event evnt, ILambdaContext context)
         {
             var s3Event = evnt.Records?[0].S3;
+          
             if (s3Event == null)
             {
                 return null;
             }
 
             try
-            {
+            {  
+                LambdaLogger.Log($"Bucket name: {s3Event.Bucket.Name} and Bucket Key:{s3Event.Object.Key}");
+                
                 using var response = await S3Client.GetObjectAsync(s3Event.Bucket.Name, s3Event.Object.Key);
                 var browserLauncher = new HeadlessChromiumPuppeteerLauncher(new LoggerFactory());
 
@@ -65,7 +68,7 @@ namespace HtmlToPDF
                 using var reader = new StreamReader(stream);
                 await page.SetContentAsync(reader.ReadToEnd());
                 var pdf = await page.PdfStreamAsync();
-                await S3Client.UploadObjectFromStreamAsync("invoice2pdf", $"{s3Event.Object.Key}.pdf", pdf, null);
+                await S3Client.UploadObjectFromStreamAsync(s3Event.Bucket.Name, $"{s3Event.Object.Key}.pdf", pdf, null);
                 return response.Headers.ContentType;
             }
             catch (Exception e)
